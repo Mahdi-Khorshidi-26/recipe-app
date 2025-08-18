@@ -17,7 +17,7 @@ datasource db {
 model PantryShelf {
   id        String   @id @default(cuid())
   name      String
-  items     PantryItem[]   @relation("PantryShelfItems")
+  items     PantryItem[] 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -26,10 +26,8 @@ model PantryItem {
   id          String   @id @default(cuid())
   name        String
   quantity    Int
-  shelf       PantryShelf? @relation("PantryShelfItems", fields: [shelfId], references: [id])
-  shelfId     String?
+  shelf       PantryShelf @relation(fields: [shelfId], references: [id] , onDelete: Cascade)
+  shelfId     String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
-  @@index([shelfId])
 }
