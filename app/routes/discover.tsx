@@ -1,5 +1,5 @@
 import type { Route } from "./+types/discover";
-import styles from "~/index.css?url";
+// import styles from "~/index.css?url";
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "Discover Page" },
@@ -7,14 +7,14 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export const links: Route.LinksFunction = () => {
-  return [
-    {
-      rel: "stylesheet",
-      href: styles,
-    },
-  ];
-};
+// export const links: Route.LinksFunction = () => {
+//   return [
+//     {
+//       rel: "stylesheet",
+//       href: styles,
+//     },
+//   ];
+// };
 
 function Discover() {
   return <h1>Discover Page</h1>;

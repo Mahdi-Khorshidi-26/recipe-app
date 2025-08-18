@@ -10,6 +10,7 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import { Header } from "./components/header/header";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -40,7 +41,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Meta />
         <Links />
       </head>
-      <body>
+      <body className="flex h-screen bg-white text-gray-900 antialiased">
         {children}
         <ScrollRestoration />
         <Scripts />
@@ -52,13 +53,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <>
-      <nav>
-        <Link to="/">Home</Link>
-        <Link to="discover">Discover</Link>
-        <Link to="app">App</Link>
-        <Link to="settings">Settings</Link>
-      </nav>
-      <Outlet />
+      <Header />
     </>
   );
 }
