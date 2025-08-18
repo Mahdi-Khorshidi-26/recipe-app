@@ -34,3 +34,7 @@ export function ComponentWithLoadingIndicator({ data,loadingIndicator,children }
   )
 
 }
+
+//libs to install 
+// npm i @prisma/client
+//  npx prisma init --datasource-provider postgresql
