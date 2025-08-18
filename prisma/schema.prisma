@@ -6,7 +6,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -26,6 +25,7 @@ model PantryItem {
   id          String   @id @default(cuid())
   name        String
   quantity    Int
+  unit        String
   shelf       PantryShelf @relation(fields: [shelfId], references: [id] , onDelete: Cascade)
   shelfId     String
   createdAt   DateTime @default(now())
