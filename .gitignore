@@ -6,3 +6,12 @@
 /build/
 
 /generated/prisma
+
+# Ignore local database files
+postgres_data/
+
+# Ignore environment and prisma config
+.env
+prisma/
+
+/generated/prisma

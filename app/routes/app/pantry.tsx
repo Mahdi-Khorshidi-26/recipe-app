@@ -21,7 +21,7 @@ export default function Pantry() {
   const [searchParams] = useSearchParams();
   return (
     <div>
-      <form className="flex border-2 border-gray-300 rounded-md">
+      <form className="flex border-2 border-gray-300 rounded-md focus-within:border-green-500 md:w-80">
         <button className="px-2">
           <FiSearch />
         </button>
@@ -31,7 +31,7 @@ export default function Pantry() {
           name="q"
           autoComplete="off"
           placeholder="Search Shelves..."
-          className="w-full py-3 px-2"
+          className="w-full py-3 px-2 outline-none"
         />
       </form>
       <ul
