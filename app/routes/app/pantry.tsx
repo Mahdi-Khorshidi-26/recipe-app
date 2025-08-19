@@ -1,17 +1,39 @@
 import type { PantryShelf } from "@prisma/client";
 import classNames from "classnames";
-import { useLoaderData, type LoaderFunction } from "react-router";
+import {
+  useLoaderData,
+  type LoaderFunction,
+  type LoaderFunctionArgs,
+  useSearchParams,
+} from "react-router";
 import { getAllShelves } from "~/models/pantry-shelves";
+import { FiSearch } from "react-icons/fi";
 
-export async function loader() {
-  const shelves = await getAllShelves();
+export async function loader({ request }: LoaderFunctionArgs) {
+  const url = new URL(request.url);
+  const q = url.searchParams.get("q") || "";
+  const shelves = await getAllShelves(q);
   return { shelves };
 }
 
 export default function Pantry() {
   const { shelves } = useLoaderData();
+  const [searchParams] = useSearchParams();
   return (
     <div>
+      <form className="flex border-2 border-gray-300 rounded-md">
+        <button className="px-2">
+          <FiSearch />
+        </button>
+        <input
+          defaultValue={searchParams.get("q") || ""}
+          type="text"
+          name="q"
+          autoComplete="off"
+          placeholder="Search Shelves..."
+          className="w-full py-3 px-2"
+        />
+      </form>
       <ul
         className={classNames(
           "flex gap-8 overflow-x-auto",
