@@ -65,8 +65,8 @@ export function Header() {
           // Mobile styles
           "fixed top-0 left-0 w-full md:relative md:top-auto md:left-auto",
           {
-            "block": menuOpen,
-            "hidden": !menuOpen,
+            block: menuOpen,
+            hidden: !menuOpen,
             "md:block": true,
           }
         )}
@@ -90,8 +90,7 @@ export function Header() {
                       navLinkClass,
                       { [activeClass]: isActive },
                       {
-                        [loadingClass]:
-                          isLoading && loadingPath === link.to,
+                        [loadingClass]: isLoading && loadingPath === link.to,
                       }
                     )
                   }
@@ -105,7 +104,7 @@ export function Header() {
         </nav>
       </aside>
       {/* Main Content */}
-      <main className="w-full p-8 bg-gray-100 md:h-screen">
+      <main className="w-full p-4 bg-gray-100 md:h-screen md:w-[calc(100%-4rem)]">
         <Outlet />
       </main>
     </div>

@@ -1,6 +1,8 @@
 import db from "~/db.server";
 
-export function getAllShelves(query: String) {
+export async function getAllShelves(query: string) {
+  // do a delay here
+  await new Promise((resolve) => setTimeout(resolve, 1000));
   return db.pantryShelf.findMany({
     where: {
       name: {
@@ -14,6 +16,9 @@ export function getAllShelves(query: String) {
           name: "asc",
         },
       },
+    },
+    orderBy: {
+      createdAt: "desc",
     },
   });
 }
