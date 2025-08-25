@@ -8,7 +8,6 @@ import {
   Form,
   useNavigation,
   useFetcher,
-  redirect,
 } from "react-router";
 import { getAllShelves } from "~/models/pantry-shelves";
 import { FiSearch } from "react-icons/fi";
@@ -17,13 +16,12 @@ import { BiDownload, BiPlus } from "react-icons/bi";
 import { createPantryShelf } from "~/models/create-pantry-shelf";
 import { useEffect, useRef } from "react";
 import { deleteShelf } from "~/models/delete-shelf";
-import db from "~/db.server";
-// import { Notify } from "~/components/notifications/notify";
 import { updateShelfName } from "~/models/updateNameOfShelf";
-
-type FieldErrors = {
-  [key: string]: string | undefined;
-};
+import { validateForm } from "~/utils/validation";
+import {
+  deleteShelfSchema,
+  saveShelfNameSchema,
+} from "~/utils/validationSchemas";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
@@ -36,34 +34,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export async function action({ request }: LoaderFunctionArgs) {
   const formData = await request.formData();
   switch (formData.get("_action")) {
-    // case "deleteShelf": {
-    //   const shelfId = formData.get("shelfId");
-    //   if (typeof shelfId !== "string") {
-    //     return { errors: { shelfId: "Invalid shelf ID" } };
-    //   }
-    //   if (shelfId) {
-    //     return deleteShelf(shelfId);
-    //   }
-    //   break;
-    // }
     case "deleteShelf": {
-      const shelfId = formData.get("shelfId");
-      if (typeof shelfId !== "string") {
-        return { errors: { shelfId: "Invalid shelf ID" } };
-      }
-      if (shelfId) {
-        // Get the shelf name before deleting
-        const shelf = await db.pantryShelf.findUnique({
-          where: { id: shelfId },
-        });
-        const deletedShelfName = shelf?.name || "";
-        await deleteShelf(shelfId);
-        // Redirect with deletedShelf query param
-        const url = new URL(request.url);
-        url.searchParams.set("deletedShelf", deletedShelfName);
-        return redirect(url.toString());
-      }
-      break;
+      return validateForm(
+        formData,
+        deleteShelfSchema,
+        async (data) => deleteShelf(data.shelfId),
+        async (errors) => {
+          return { errors };
+        }
+      );
     }
     case "createShelf": {
       const shelfName = formData.get("shelfName") || "Vegetables";
@@ -74,31 +53,26 @@ export async function action({ request }: LoaderFunctionArgs) {
         return createPantryShelf(shelfName);
       }
       break;
+      //  return validateForm(
+      //    formData || "Vegetables",
+      //    createShelfSchema,
+      //    async (data) => createPantryShelf(data.shelfName),
+      //    async (errors) => {
+      //      return { errors };
+      //    }
+      //  );
     }
     case "saveShelfName": {
-      const shelfId = formData.get("shelfId");
-      const shelfName = formData.get("shelfName");
-      const errors: FieldErrors = {};
-      if (
-        typeof shelfId === "string" &&
-        typeof shelfName === "string" &&
-        shelfName !== ""
-      ) {
-        return updateShelfName(shelfId, shelfName);
-      }
-
-      if (typeof shelfName !== "string") {
-        errors["shelfName"] = "Shelf name must be a string";
-      }
-
-      if (shelfName === "") {
-        errors["shelfName"] = "Shelf name cannot be blank";
-      }
-
-      if (typeof shelfId !== "string") {
-        errors["shelfId"] = "Shelf ID must be a string";
-      }
-      return { errors };
+      return validateForm(
+        formData,
+        saveShelfNameSchema,
+        async (data) => {
+          return await updateShelfName(data.shelfId, data.shelfName);
+        },
+        async (errors) => {
+          return { errors };
+        }
+      );
     }
     default: {
       return null;
@@ -107,7 +81,7 @@ export async function action({ request }: LoaderFunctionArgs) {
 }
 
 export default function Pantry() {
-  const { shelves, deletedShelf } = useLoaderData();
+  const { shelves } = useLoaderData();
   const [searchParams] = useSearchParams();
   const navigation = useNavigation();
   const createShelfFetcher = useFetcher();
@@ -124,11 +98,6 @@ export default function Pantry() {
 
   return (
     <div>
-      {/* {deletedShelf && (
-        <div className="mb-4 p-3 bg-green-100 border border-green-400 text-red-800 rounded">
-          Shelf <strong>{deletedShelf}</strong> Was Deleted!
-        </div>
-      )} */}
       <Form
         className={classNames(
           "flex border-2 border-gray-300 rounded-md focus-within:border-green-500 md:w-80 mb-1",
@@ -264,7 +233,7 @@ function Shelf({ shelf }: ShelfProps) {
   const isDeletingShelf =
     deleteShelfFetcher.formData?.get("_action") === "deleteShelf" &&
     deleteShelfFetcher.formData?.get("shelfId") === shelf.id;
-  const saveShelfName = useFetcher();
+  const saveShelfNameFetcher = useFetcher();
   return (
     <li
       key={shelf.id}
@@ -274,22 +243,34 @@ function Shelf({ shelf }: ShelfProps) {
         "md:w-96"
       )}
     >
-      <saveShelfName.Form method="post" className="mb-4 flex">
-        <input
-          className={classNames(
-            "text-2xl font-extrabold mb-2 w-full outline-none",
-            "border-b-white focus:border-b-2 focus:border-green-500 pb-1"
-          )}
-          defaultValue={shelf.name}
-          name="shelfName"
-          placeholder="Shelf Name"
-          autoComplete="off"
-        />
-        <button name="_action" value="saveShelfName" className="ml-4 cursor-pointer text-2xl hover:text-green-500">
+      <saveShelfNameFetcher.Form method="post" className="flex">
+        <div className="w-full mb-2">
+          <input
+            className={classNames(
+              "text-2xl font-extrabold mb-2 w-full outline-none",
+              "border-b-white focus:border-b-2 focus:border-green-500 pb-1",
+              saveShelfNameFetcher.data?.errors?.shelfName
+                ? "border-b-red-600"
+                : ""
+            )}
+            defaultValue={shelf.name}
+            name="shelfName"
+            placeholder="Shelf Name"
+            autoComplete="off"
+          />
+          <span className="text-red-600">
+            {saveShelfNameFetcher.data?.errors?.shelfName}
+          </span>
+        </div>
+        <button
+          name="_action"
+          value="saveShelfName"
+          className="ml-4 cursor-pointer text-2xl hover:text-green-500"
+        >
           <BiDownload />
         </button>
         <input type="hidden" name="shelfId" value={shelf.id} />
-      </saveShelfName.Form>
+      </saveShelfNameFetcher.Form>
       <ul className="space-y-2">
         {shelf.items && shelf.items.length > 0 ? (
           shelf.items.map((item: any) => (
