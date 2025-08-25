@@ -22,6 +22,7 @@ import {
   deleteShelfSchema,
   saveShelfNameSchema,
 } from "~/utils/validationSchemas";
+import { ErrorMessage } from "~/components/ErrorMessage/errorMessage";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
@@ -53,14 +54,6 @@ export async function action({ request }: LoaderFunctionArgs) {
         return createPantryShelf(shelfName);
       }
       break;
-      //  return validateForm(
-      //    formData || "Vegetables",
-      //    createShelfSchema,
-      //    async (data) => createPantryShelf(data.shelfName),
-      //    async (errors) => {
-      //      return { errors };
-      //    }
-      //  );
     }
     case "saveShelfName": {
       return validateForm(
@@ -234,7 +227,7 @@ function Shelf({ shelf }: ShelfProps) {
     deleteShelfFetcher.formData?.get("_action") === "deleteShelf" &&
     deleteShelfFetcher.formData?.get("shelfId") === shelf.id;
   const saveShelfNameFetcher = useFetcher();
-  return (
+  return isDeletingShelf ? null : (
     <li
       key={shelf.id}
       className={classNames(
@@ -250,7 +243,7 @@ function Shelf({ shelf }: ShelfProps) {
               "text-2xl font-extrabold mb-2 w-full outline-none",
               "border-b-white focus:border-b-2 focus:border-green-500 pb-1",
               saveShelfNameFetcher.data?.errors?.shelfName
-                ? "border-b-red-600"
+                ? "border-b-red-600 border-b-2"
                 : ""
             )}
             defaultValue={shelf.name}
@@ -270,6 +263,9 @@ function Shelf({ shelf }: ShelfProps) {
           <BiDownload />
         </button>
         <input type="hidden" name="shelfId" value={shelf.id} />
+        <ErrorMessage>
+          {saveShelfNameFetcher.data?.errors?.shelfName}
+        </ErrorMessage>
       </saveShelfNameFetcher.Form>
       <ul className="space-y-2">
         {shelf.items && shelf.items.length > 0 ? (
@@ -290,6 +286,9 @@ function Shelf({ shelf }: ShelfProps) {
       </ul>
       <deleteShelfFetcher.Form method="post" className="pt-8">
         <input type="hidden" name="shelfId" value={shelf.id} />
+        <ErrorMessage className="pb-2">
+          {deleteShelfFetcher.data?.errors?.shelfId}
+        </ErrorMessage>
         <DeleteButton
           className="w-full"
           value="deleteShelf"
@@ -297,7 +296,7 @@ function Shelf({ shelf }: ShelfProps) {
           isLoading={isDeletingShelf}
           disabled={isDeletingShelf}
         >
-          {isDeletingShelf ? "Deleting Shelf ..." : " Delete Shelf"}
+          Delete Shelf
         </DeleteButton>
       </deleteShelfFetcher.Form>
     </li>
