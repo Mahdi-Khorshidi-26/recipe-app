@@ -6,6 +6,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useRouteError,
 } from "react-router";
 
 import type { Route } from "./+types/root";
@@ -58,31 +59,29 @@ export default function App() {
   );
 }
 
-export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let message = "Oops!";
-  let details = "An unexpected error occurred.";
-  let stack: string | undefined;
-
-  if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? "404" : "Error";
-    details =
-      error.status === 404
-        ? "The requested page could not be found."
-        : error.statusText || details;
-  } else if (import.meta.env.DEV && error && error instanceof Error) {
-    details = error.message;
-    stack = error.stack;
-  }
-
+export function ErrorBoundary() {
+  const error = useRouteError();
   return (
-    <main className="pt-16 p-4 container mx-auto">
-      <h1>{message}</h1>
-      <p>{details}</p>
-      {stack && (
-        <pre className="w-full p-4 overflow-x-auto">
-          <code>{stack}</code>
-        </pre>
-      )}
-    </main>
+    <html>
+      <head>
+        <title>Whoops!</title>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <Meta />
+        <Links />
+      </head>
+      <body>
+        <div className="p-4">
+          <h1 className="text-2xl pb-3">Whoops!</h1>
+          <p>You're seeing this page because an unexpected error occurred.</p>
+          {error instanceof Error ? (
+            <p className="my-4 font-bold">{error.message}</p>
+          ) : null}
+          <Link to="/" className="text-green-500">
+            Take Me To Home
+          </Link>
+        </div>
+      </body>
+    </html>
   );
 }
